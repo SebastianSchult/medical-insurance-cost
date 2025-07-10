@@ -1,6 +1,7 @@
 import csv
+from sklearn.linear_model import LinearRegression
+import numpy as np
 
-# 1. Leere Listen vorbereiten
 ages = []
 sexes = []
 bmis = []
@@ -9,7 +10,6 @@ smokers = []
 regions = []
 charges = []
 
-# 2. insurance.csv einlesen und Daten speichern
 with open("insurance.csv", newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
@@ -21,7 +21,6 @@ with open("insurance.csv", newline='') as csvfile:
         regions.append(row["region"])
         charges.append(float(row["charges"]))
 
-# 3. Klasse zur Analyse definieren
 class InsuranceAnalyzer:
     def __init__(self, ages, sexes, bmis, children, smokers, regions, charges):
         self.ages = ages
@@ -31,6 +30,9 @@ class InsuranceAnalyzer:
         self.smokers = smokers
         self.regions = regions
         self.charges = charges
+
+        # Modell vorbereiten
+        self.model = self._train_model()
 
     def average_cost(self):
         return sum(self.charges) / len(self.charges)
@@ -55,13 +57,35 @@ class InsuranceAnalyzer:
             result[sex] = result.get(sex, 0) + 1
         return result
 
-# 4. Analyseobjekt erstellen
+    def _train_model(self):
+        # Eingabedaten vorbereiten (Alter, BMI, Raucherstatus)
+        X = []
+        for age, bmi, smoker in zip(self.ages, self.bmis, self.smokers):
+            smoker_numeric = 1 if smoker == "yes" else 0
+            X.append([age, bmi, smoker_numeric])
+        X = np.array(X)
+        y = np.array(self.charges)
+
+        model = LinearRegression()
+        model.fit(X, y)
+        return model
+
+    def predict_charge(self, age, bmi, smoker_status):
+        smoker_num = 1 if smoker_status.lower() == "yes" else 0
+        input_data = np.array([[age, bmi, smoker_num]])
+        return self.model.predict(input_data)[0]
+
+# Objekt erstellen
 analyzer = InsuranceAnalyzer(ages, sexes, bmis, children, smokers, regions, charges)
 
-# 5. Analysen durchführen
+# Analyse ausgeben
 print("💰 Gesamtdurchschnitt Versicherungskosten:", round(analyzer.average_cost(), 2))
 print("🚬 Durchschnittskosten (Raucher):", round(analyzer.average_cost_by_smoker("yes"), 2))
 print("🚭 Durchschnittskosten (Nichtraucher):", round(analyzer.average_cost_by_smoker("no"), 2))
 print("👶 Durchschnittsalter mit Kindern:", round(analyzer.average_age_with_children(), 2))
 print("🌍 Regionale Verteilung:", analyzer.region_distribution())
 print("🚻 Geschlechterverteilung:", analyzer.gender_distribution())
+
+# Vorhersagebeispiele
+print("🔮 Prognose für 35 Jahre, BMI 28.5, Raucher:", round(analyzer.predict_charge(35, 28.5, "yes"), 2))
+print("🔮 Prognose für 35 Jahre, BMI 28.5, Nichtraucher:", round(analyzer.predict_charge(35, 28.5, "no"), 2))
