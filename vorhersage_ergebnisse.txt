@@ -1,0 +1,3 @@
+Alter: 45, BMI: 22.0, Raucher: yes, Region: northeast, Kinder: 2, Vorhersage: 30924.02 $
+Alter: 45, BMI: 22.0, Raucher: no, Region: northeast, Kinder: 2, Vorhersage: 7100.34 $
+Alter: 45, BMI: 27.0, Raucher: no, Region: northeast, Kinder: 2, Vorhersage: 8713.42 $

@@ -94,16 +94,28 @@ def show_prediction_gui(analyzer):
             age = int(age_entry.get())
             bmi = float(bmi_entry.get())
             smoker = smoker_var.get()
+            region = region_var.get()
+            num_children = int(children_entry.get())
 
             prediction = analyzer.predict_charge(age, bmi, smoker)
-            result_label.config(text=f"🔮 Vorhergesagte Kosten: {round(prediction, 2)} $")
+            result_label.config(
+                text=f"🔮 Vorhergesagte Kosten: {round(prediction, 2)} $\n"
+                     f"Region: {region}, Kinder: {num_children}"
+            )
+
+            # Optional: Ergebnisse in Datei speichern
+            with open("vorhersage_ergebnisse.txt", "a") as f:
+                f.write(f"Alter: {age}, BMI: {bmi}, Raucher: {smoker}, Region: {region}, Kinder: {num_children}, "
+                        f"Vorhersage: {round(prediction, 2)} $\n")
+
         except ValueError:
-            messagebox.showerror("Fehler", "Bitte gültige Zahlen für Alter und BMI eingeben.")
+            messagebox.showerror("Fehler", "Bitte gültige Zahlen für Alter, BMI und Kinderanzahl eingeben.")
 
     window = tk.Tk()
     window.title("Versicherungskosten-Vorhersage")
-    window.geometry("350x250")
+    window.geometry("400x350")
 
+    # Eingabefelder
     tk.Label(window, text="Alter:").pack()
     age_entry = tk.Entry(window)
     age_entry.pack()
@@ -112,12 +124,22 @@ def show_prediction_gui(analyzer):
     bmi_entry = tk.Entry(window)
     bmi_entry.pack()
 
+    tk.Label(window, text="Anzahl Kinder:").pack()
+    children_entry = tk.Entry(window)
+    children_entry.pack()
+
     tk.Label(window, text="Raucherstatus:").pack()
     smoker_var = tk.StringVar(window)
-    smoker_var.set("no")  
+    smoker_var.set("no")
     tk.OptionMenu(window, smoker_var, "yes", "no").pack()
 
+    tk.Label(window, text="Region:").pack()
+    region_var = tk.StringVar(window)
+    region_var.set("southeast")
+    tk.OptionMenu(window, region_var, "southeast", "southwest", "northeast", "northwest").pack()
+
     tk.Button(window, text="Kosten vorhersagen", command=on_predict).pack(pady=10)
+
     result_label = tk.Label(window, text="", font=("Arial", 12, "bold"))
     result_label.pack()
 
