@@ -31,7 +31,6 @@ class InsuranceAnalyzer:
         self.regions = regions
         self.charges = charges
 
-        # Modell vorbereiten
         self.model = self._train_model()
 
     def average_cost(self):
@@ -58,7 +57,6 @@ class InsuranceAnalyzer:
         return result
 
     def _train_model(self):
-        # Eingabedaten vorbereiten (Alter, BMI, Raucherstatus)
         X = []
         for age, bmi, smoker in zip(self.ages, self.bmis, self.smokers):
             smoker_numeric = 1 if smoker == "yes" else 0
@@ -75,10 +73,8 @@ class InsuranceAnalyzer:
         input_data = np.array([[age, bmi, smoker_num]])
         return self.model.predict(input_data)[0]
 
-# Objekt erstellen
 analyzer = InsuranceAnalyzer(ages, sexes, bmis, children, smokers, regions, charges)
 
-# Analyse ausgeben
 print("💰 Gesamtdurchschnitt Versicherungskosten:", round(analyzer.average_cost(), 2))
 print("🚬 Durchschnittskosten (Raucher):", round(analyzer.average_cost_by_smoker("yes"), 2))
 print("🚭 Durchschnittskosten (Nichtraucher):", round(analyzer.average_cost_by_smoker("no"), 2))
@@ -86,6 +82,45 @@ print("👶 Durchschnittsalter mit Kindern:", round(analyzer.average_age_with_ch
 print("🌍 Regionale Verteilung:", analyzer.region_distribution())
 print("🚻 Geschlechterverteilung:", analyzer.gender_distribution())
 
-# Vorhersagebeispiele
 print("🔮 Prognose für 35 Jahre, BMI 28.5, Raucher:", round(analyzer.predict_charge(35, 28.5, "yes"), 2))
 print("🔮 Prognose für 35 Jahre, BMI 28.5, Nichtraucher:", round(analyzer.predict_charge(35, 28.5, "no"), 2))
+
+import tkinter as tk
+from tkinter import messagebox
+
+def show_prediction_gui(analyzer):
+    def on_predict():
+        try:
+            age = int(age_entry.get())
+            bmi = float(bmi_entry.get())
+            smoker = smoker_var.get()
+
+            prediction = analyzer.predict_charge(age, bmi, smoker)
+            result_label.config(text=f"🔮 Vorhergesagte Kosten: {round(prediction, 2)} $")
+        except ValueError:
+            messagebox.showerror("Fehler", "Bitte gültige Zahlen für Alter und BMI eingeben.")
+
+    window = tk.Tk()
+    window.title("Versicherungskosten-Vorhersage")
+    window.geometry("350x250")
+
+    tk.Label(window, text="Alter:").pack()
+    age_entry = tk.Entry(window)
+    age_entry.pack()
+
+    tk.Label(window, text="BMI:").pack()
+    bmi_entry = tk.Entry(window)
+    bmi_entry.pack()
+
+    tk.Label(window, text="Raucherstatus:").pack()
+    smoker_var = tk.StringVar(window)
+    smoker_var.set("no")  
+    tk.OptionMenu(window, smoker_var, "yes", "no").pack()
+
+    tk.Button(window, text="Kosten vorhersagen", command=on_predict).pack(pady=10)
+    result_label = tk.Label(window, text="", font=("Arial", 12, "bold"))
+    result_label.pack()
+
+    window.mainloop()
+
+show_prediction_gui(analyzer)
